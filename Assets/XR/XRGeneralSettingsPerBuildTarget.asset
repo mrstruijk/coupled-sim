@@ -43,7 +43,12 @@ MonoBehaviour:
   m_RequiresSettingsUpdate: 0
   m_AutomaticLoading: 0
   m_AutomaticRunning: 0
+<<<<<<< Updated upstream
   m_Loaders: []
+=======
+  m_Loaders:
+  - {fileID: 11400000, guid: 2ab2baa8867774d37aa7cddaa57ffcd3, type: 2}
+>>>>>>> Stashed changes
 --- !u!114 &-807734192201645616
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -59,7 +64,12 @@ MonoBehaviour:
   m_RequiresSettingsUpdate: 0
   m_AutomaticLoading: 0
   m_AutomaticRunning: 0
+<<<<<<< Updated upstream
   m_Loaders: []
+=======
+  m_Loaders:
+  - {fileID: 11400000, guid: 196737e74d7a54328a9837e5c7b0f66b, type: 2}
+>>>>>>> Stashed changes
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
