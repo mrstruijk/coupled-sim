@@ -41,8 +41,9 @@ public class AICar : MonoBehaviour, IVehicle
 
     // Game related variables
     public Transform target; // Target on waypoint circuit that cars will follow
-    private float accAfterYield;
     private readonly float conversion = 3.6f;
+    private readonly float tolerance = 0.05f; // Used to determine if the changed variable reached its target value. 2% seems to fit. (De Clercq)
+    private float accAfterYield;
     private float delta_distance;
     private bool InitiateAV;
 
@@ -62,7 +63,6 @@ public class AICar : MonoBehaviour, IVehicle
     private Rigidbody theRigidbody; // Variable for the rigid body this script is attached to
     private float Timer1;
     private float Timer2;
-    private readonly float tolerance = 0.05f; // Used to determine if the changed variable reached its target value. 2% seems to fit. (De Clercq)
 
     private float triggerlocation;
     private float yieldingTime;
@@ -149,12 +149,15 @@ public class AICar : MonoBehaviour, IVehicle
 
             if ((set_acceleration > 0f && set_speed > speed) || (set_acceleration < 0f && set_speed < speed))
             {
-                speed = speed + set_acceleration * Time.fixedDeltaTime * conversion;
+                speed += set_acceleration * Time.fixedDeltaTime * conversion;
                 pitch = acceleration / 3 * HasPitch;
                 modelLocalRotation = Quaternion.Slerp(modelLocalRotation, Quaternion.Euler(-pitch, 0, 0), 0.5f);
             }
 
-            playerAvatar.SetBreakLights(set_acceleration < 0f && (set_speed < speed || speed < 0.1f));
+            if (playerAvatar != null)
+            {
+                playerAvatar.SetBreakLights(set_acceleration < 0f && (set_speed < speed || speed < 0.1f));
+            }
 
             if (acceleration != 0 && Mathf.Abs(speed) < Mathf.Abs(set_speed) * (1 + tolerance) + tolerance * 10 && Mathf.Abs(speed) > Mathf.Abs(set_speed) * (1 - tolerance) - tolerance * 10)
             {
@@ -332,7 +335,12 @@ public class AICar : MonoBehaviour, IVehicle
 
         if (other.gameObject.CompareTag("WP"))
         {
-            GetComponent<PlayerAvatar>().CarBlinkers.SwitchToState(speedSettings.BlinkerState);
+            var pa = GetComponent<PlayerAvatar>();
+
+            if (pa != null)
+            {
+                pa.CarBlinkers.SwitchToState(speedSettings.BlinkerState);
+            }
 
             if (speedSettings.Type == SpeedSettings.WaypointType.InitialSetSpeed)
             {

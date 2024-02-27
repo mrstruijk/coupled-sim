@@ -1,4 +1,3 @@
-using System.IO;
 using UnityEngine;
 using UnityStandardAssets.Utility;
 
@@ -8,7 +7,7 @@ using UnityStandardAssets.Utility;
 public class WaypointDrawer : MonoBehaviour
 {
     [SerializeField] private Color m_startPointColor = Color.green;
-    [SerializeField] private Color m_pathColor = Color.blue; 
+    [SerializeField] private Color m_pathColor = Color.blue;
     [SerializeField] private Color m_pointColor = Color.yellow;
     [SerializeField] private Color m_endPointColor = Color.red;
     [SerializeField] private bool m_loopToStart;

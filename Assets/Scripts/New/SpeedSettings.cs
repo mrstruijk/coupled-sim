@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using SOSXR;
 using UnityEngine;
 
@@ -43,11 +42,11 @@ public class SpeedSettings : MonoBehaviour
 
     [DisableEditing] public float YieldingEyeContactUntil;
     private float startTime;
-    //Dynamics
-    public CustomBehaviourData[] CustomBehaviourData { get; set; }
 
     private float _storedAcceleration;
     private float _storedDeceleration;
+    //Dynamics
+    public CustomBehaviourData[] CustomBehaviourData { get; set; }
 
 
     private void Start()
@@ -89,9 +88,12 @@ public class SpeedSettings : MonoBehaviour
             }
         }
 
-        foreach (var bd in CustomBehaviourData)
+        if (CustomBehaviourData != null)
         {
-            aiCar.TriggerCustomBehaviours(bd);
+            foreach (var bd in CustomBehaviourData)
+            {
+                aiCar.TriggerCustomBehaviours(bd);
+            }
         }
     }
 
