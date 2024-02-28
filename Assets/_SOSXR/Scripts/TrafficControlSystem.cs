@@ -1,5 +1,7 @@
+using System;
 using UnityEngine;
 using UnityStandardAssets.Utility;
+using Random = UnityEngine.Random;
 
 
 [RequireComponent(typeof(WaypointProgressTracker))]
@@ -9,14 +11,17 @@ public class TrafficControlSystem : MonoBehaviour
     [SerializeField] private Renderer m_paintRenderer;
     [SerializeField] private Color m_randomColor = Color.red;
     [SerializeField] private Transform m_rayStartPoint;
-    [Range(0, 50)] [SerializeField] private float m_rayLength = 10.0f; // Length of the ray
-    [SerializeField] private string m_targetTag = "ManualCar"; // Tag of the collider you are looking for
-
+    [Range(0, 50)] [SerializeField] private float m_rayLength = 10.0f;
+    [SerializeField] private string m_targetTag = "ManualCar";
+    [SerializeField] [Range(0.1f, 5f)] private float m_sphereRadius = 1f;
+    [SerializeField] private LayerMask m_layerMask; // Set to Car
+    [SerializeField] private Vector2 m_closeMedium = new(2, 10);
     private AICar m_aiCar;
     private WaypointProgressTracker m_tracker;
-
+    private float _desiredSpeed;
+    private float _desiredAcceleration;
+    [SerializeField] private float m_lerpSpeed = 10f;
     private RaycastHit m_hit;
-    [SerializeField] [Range(0.1f, 5f)] private float m_sphereRadius = 1f;
 
 
     private void Awake()
@@ -65,15 +70,19 @@ public class TrafficControlSystem : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (Physics.SphereCast(m_rayStartPoint.position, m_sphereRadius, transform.forward, out m_hit, m_rayLength))
+        //   CheckForOtherCarInFront();
+    }
+
+
+    private void CheckForOtherCarInFront()
+    {
+        if (Physics.SphereCast(m_rayStartPoint.position, m_sphereRadius, transform.forward, out m_hit, m_rayLength, m_layerMask))
         {
-            // Check if the collider has the correct tag
             if (m_hit.collider.CompareTag(m_targetTag))
             {
-                //Debug.Log("Hit a target with tag " + m_targetTag + ". Distance: " + m_hit.distance);
-                // RecalcSpeed(m_hit.distance);
+                Debug.LogFormat("Hit a target {0}", m_hit.transform.name);
 
-                var otherCar = m_hit.transform.gameObject.GetComponent<AICar>();
+                var otherCar = m_hit.transform.root.gameObject.GetComponentInChildren<AICar>();
 
                 if (otherCar != null)
                 {
@@ -96,62 +105,65 @@ public class TrafficControlSystem : MonoBehaviour
 
     private void AdjustSpeedBasedOnFrontCar(float hitDistance, AICar otherCar)
     {
-        if (hitDistance < 10)
+        if (hitDistance < m_closeMedium.x)
         {
-            Debug.LogWarning("TEN METERS");
-            m_aiCar.acceleration = -5;
-            m_aiCar.speed = 0;
+            Debug.LogFormat("Less than {0}", m_closeMedium.x);
+            _desiredAcceleration= -1;
+            _desiredAcceleration = 0;
         }
-        else if (hitDistance is >= 10 and < 25)
+        else if (hitDistance >= m_closeMedium.x && hitDistance < m_closeMedium.y)
         {
-            Debug.LogWarning("10-25 METERS");
-            m_aiCar.acceleration = -2;
-            m_aiCar.speed = (float) (otherCar.speed * 0.95);
+            Debug.LogFormat("More than {0} and less than {1}", m_closeMedium.x, m_closeMedium.y);
+
+            _desiredAcceleration = -1;
+
+            if (otherCar.speed != 0)
+            {
+                _desiredSpeed = (float) (otherCar.speed * 0.9);
+            }
+            else
+            {
+                _desiredSpeed = 5;
+            }
         }
         else
         {
-            Debug.LogWarning("25+");
-            m_aiCar.acceleration = -1;
-            m_aiCar.speed = otherCar.speed;
+            Debug.LogFormat("More than {0}", m_closeMedium.y);
+
+            if (otherCar.speed != 0)
+            {
+                _desiredAcceleration = otherCar.acceleration * 0.9f;
+                _desiredSpeed = otherCar.speed;
+            }
+            else
+            {
+                _desiredAcceleration = -1f;
+                _desiredSpeed = 15;
+            }
         }
+
+        m_aiCar.speed = Mathf.Lerp(m_aiCar.speed, _desiredSpeed, Time.deltaTime * m_lerpSpeed);
+        m_aiCar.acceleration = _desiredAcceleration;
     }
-
-
-    private void RecalcSpeed(float hitDistance)
-    {
-        if (hitDistance < 2)
-        {
-            m_aiCar.acceleration = -5;
-            m_aiCar.speed = 0;
-        }
-
-        if (hitDistance is >= 2 and < 10)
-        {
-            m_aiCar.acceleration = -2;
-            m_aiCar.speed = 10;
-        }
-        else
-        {
-            m_aiCar.acceleration = -1;
-            m_aiCar.speed = 20;
-        }
-    }
-
+    
 
     // Draw a line in the Scene view for the ray
     private void OnDrawGizmos()
     {
+        Vector3 direction;
+
         if (m_hit.transform != null)
         {
             Gizmos.color = Color.green;
+            direction = m_rayStartPoint.TransformDirection(Vector3.forward) * m_hit.distance;
             Gizmos.DrawSphere(m_hit.transform.position, m_sphereRadius);
         }
         else
         {
             Gizmos.color = Color.red;
+            direction = m_rayStartPoint.TransformDirection(Vector3.forward) * m_rayLength;
         }
 
-        var direction = m_rayStartPoint.TransformDirection(Vector3.forward) * m_rayLength; // Calculate the direction of the ray
-        Gizmos.DrawRay(m_rayStartPoint.position, direction); // Draw the ray in the Scene view
+        Gizmos.DrawRay(m_rayStartPoint.position, direction);
     }
 }

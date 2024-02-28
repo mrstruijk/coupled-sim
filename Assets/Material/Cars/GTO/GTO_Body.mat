@@ -35,7 +35,7 @@ Material:
     m_Floats:
     - _Shininess: 0.119
     m_Colors:
-    - _Color: {r: 0.53461486, g: 0.8212199, b: 0.80046296, a: 1}
+    - _Color: {r: 0.76356846, g: 0.044023693, b: 0.79229176, a: 1}
     - _ReflectColor: {r: 1, g: 1, b: 1, a: 0.553}
     - _SpecColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
