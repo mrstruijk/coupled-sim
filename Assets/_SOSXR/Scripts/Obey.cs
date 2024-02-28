@@ -55,7 +55,7 @@ public class Obey : MonoBehaviour
 
         _boxCollider = gameObject.AddComponent<BoxCollider>();
         _boxCollider.size = new Vector3(m_colliderSize.x, m_colliderSize.y, m_colliderSize.z);
-        _boxCollider.center = new Vector3(m_colliderSize.x / 3, -m_colliderSize.y, 0);
+        _boxCollider.center = new Vector3(m_colliderSize.x / 2, -m_colliderSize.y, 0);
         _boxCollider.isTrigger = true;
     }
 
@@ -81,9 +81,13 @@ public class Obey : MonoBehaviour
 
             if (theirBox.bounds.Intersects(_boxCollider.bounds))
             {
-                theirBox.gameObject.SetActive(false);
-                Debug.LogWarning("One other SpeedSetting component was in my way, I disabled their GameObject completely.");
-                // This needed doing because otherwise that other speedsetter would interfere, and make the car accelerate for instance when it should stop for red light
+                var otherSpeedSettings = theirBox.gameObject.GetComponent<SpeedSettings>();
+
+                if (otherSpeedSettings != null)
+                {
+                    otherSpeedSettings.enabled = false;
+                    Debug.LogWarning("One other SpeedSetting component was in my way, I disabled it."); // This needed doing because otherwise that other speedsetter would interfere, and make the car accelerate for instance when it should stop for red light
+                }
             }
         }
     }
@@ -129,23 +133,20 @@ public class Obey : MonoBehaviour
 
         if (aiCar == null)
         {
-            Debug.LogErrorFormat("AICar is null, the thing that was here was {0}", other.transform.root.name);
             return;
         }
 
         if (!aiCar.isActiveAndEnabled)
         {
             Debug.LogError("AICar was found, but is not active");
+
             return;
         }
 
         if (!m_obey)
         {
             Debug.LogFormat("We're not listening to this traffic light here! We're bad bad drivers. The light is now {0}", m_carTrafficLight.State.ToString());
-            return;
         }
-        
-        Debug.LogFormat("We are listening to this traffic light here");
     }
 
 
@@ -178,10 +179,6 @@ public class Obey : MonoBehaviour
             {
                 Debug.Log("This could also be a place to add multiple functions for other light states. Like what to do when light was Yellow? Is not a traffic violation, but might be something interesting anyway.");
             }
-        }
-        else
-        {
-            Debug.LogFormat("We have been listening to this traffic light here");
         }
     }
 }

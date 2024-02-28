@@ -27,6 +27,7 @@ public class LiveLogger : IDisposable
 
     public void Flush()
     {
+            
         _socket.Send(_buffer, (int)_stream.Position);
         _stream.Position = 0;
     }
